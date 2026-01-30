@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Cuadrática - Estilo Serpiente</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -526,6 +527,14 @@
             .soluciones-container {
                 flex-direction: column;
             }
+            
+            .grafica-contenedor {
+                flex-direction: column;
+            }
+            
+            .rangos-control {
+                grid-template-columns: 1fr;
+            }
         }
         
         /* Animación de serpiente en el fondo */
@@ -609,22 +618,111 @@
             margin-top: 2px;
         }
         
-        @media (max-width: 768px) {
-            .decimales-control {
-                bottom: 15px;
-                right: 15px;
-                padding: 8px 12px;
-            }
-            
-            .decimales-btn {
-                width: 35px;
-                height: 35px;
-                font-size: 1.3rem;
-            }
-            
-            .decimales-valor {
-                font-size: 1.5rem;
-            }
+        /* Contenedor de gráfica */
+        .grafica-contenedor {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .grafica-canvas-container {
+            flex: 2;
+            min-width: 300px;
+            background: rgba(20, 20, 35, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .grafica-controls {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(20, 20, 35, 0.9);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+        }
+        
+        .grafica-controls h4 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(139, 0, 0, 0.3);
+        }
+        
+        .rangos-control {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .rango-item {
+            background: rgba(30, 30, 50, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #8B0000;
+        }
+        
+        .rango-item h5 {
+            color: #FFD700;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .rango-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .rango-inputs input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(20, 20, 35, 0.8);
+            border: 1px solid rgba(139, 0, 0, 0.4);
+            border-radius: 6px;
+            color: #f0f0f0;
+            text-align: center;
+        }
+        
+        .rango-inputs span {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .btn-grafica {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(to right, #8B0000, #630000);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-grafica:hover {
+            background: linear-gradient(to right, #9B0000, #730000);
+            transform: translateY(-2px);
+        }
+        
+        .info-grafica {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(139, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            line-height: 1.5;
         }
         
         /* Indicador de decimales en los resultados */
@@ -677,11 +775,105 @@
             font-size: 1rem;
         }
         
+        /* Puntos de intersección en la gráfica */
+        .puntos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .punto-item {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            background: rgba(30, 30, 50, 0.7);
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+        
+        .punto-item h5 {
+            color: #FFD700;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .punto-valor {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        /* Toggle para mostrar/ocultar gráfica */
+        .toggle-grafica {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 15px;
+            cursor: pointer;
+            color: #FFD700;
+            font-weight: 600;
+            gap: 10px;
+        }
+        
+        .toggle-grafica input {
+            display: none;
+        }
+        
+        .toggle-slider {
+            width: 50px;
+            height: 25px;
+            background: rgba(139, 0, 0, 0.5);
+            border-radius: 25px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            background: #FFD700;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-grafica input:checked + .toggle-slider {
+            background: rgba(139, 0, 0, 0.8);
+        }
+        
+        .toggle-grafica input:checked + .toggle-slider::before {
+            transform: translateX(25px);
+        }
+        
         @media (max-width: 768px) {
+            .decimales-control {
+                bottom: 15px;
+                right: 15px;
+                padding: 8px 12px;
+            }
+            
+            .decimales-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1.3rem;
+            }
+            
+            .decimales-valor {
+                font-size: 1.5rem;
+            }
+            
             .decimales-info {
                 bottom: 80px;
                 right: 15px;
                 max-width: 200px;
+            }
+            
+            .rangos-control {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -699,6 +891,10 @@
             <div class="menu-item active" data-target="calculadora">
                 <i class="fas fa-calculator"></i>
                 <span>Calculadora</span>
+            </div>
+            <div class="menu-item" data-target="grafica">
+                <i class="fas fa-chart-line"></i>
+                <span>Gráfica</span>
             </div>
             <div class="menu-item" data-target="explicacion">
                 <i class="fas fa-info-circle"></i>
@@ -754,6 +950,12 @@
                     </div>
                     <small style="color: #aaa; font-size: 0.9rem;">Término independiente</small>
                 </div>
+            </div>
+            
+            <div class="toggle-grafica">
+                <input type="checkbox" id="mostrarGraficaCalculadora">
+                <label for="mostrarGraficaCalculadora" class="toggle-slider"></label>
+                <span>Mostrar gráfica después de calcular</span>
             </div>
             
             <div class="botones-contenedor">
@@ -812,6 +1014,97 @@
                         <div class="decimal-indicator" id="solucion-compleja-decimales">Mostrando con 3 decimales</div>
                     </div>
                 </div>
+                
+                <!-- Puntos de intersección -->
+                <div id="puntos-interseccion" style="display: none; margin-top: 25px;">
+                    <h5><i class="fas fa-bullseye"></i> Puntos de intersección con el eje X</h5>
+                    <div class="puntos-container">
+                        <div class="punto-item">
+                            <h5>Punto 1</h5>
+                            <div class="punto-valor" id="punto1">(0, 0)</div>
+                            <p>x₁ = <span id="punto1-x">0</span></p>
+                        </div>
+                        <div class="punto-item">
+                            <h5>Punto 2</h5>
+                            <div class="punto-valor" id="punto2">(0, 0)</div>
+                            <p>x₂ = <span id="punto2-x">0</span></p>
+                        </div>
+                        <div class="punto-item">
+                            <h5>Vértice</h5>
+                            <div class="punto-valor" id="vertice">(0, 0)</div>
+                            <p>x = <span id="vertice-x">0</span>, y = <span id="vertice-y">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Sección Gráfica -->
+        <section id="grafica" class="seccion">
+            <h3><i class="fas fa-chart-line"></i> Gráfica de la Parábola</h3>
+            
+            <div class="info-box" style="margin-bottom: 25px;">
+                <p>Visualiza la parábola correspondiente a la ecuación cuadrática. Puedes ajustar los rangos de los ejes X e Y para explorar diferentes partes de la gráfica.</p>
+            </div>
+            
+            <div class="grafica-contenedor">
+                <div class="grafica-canvas-container">
+                    <canvas id="graficaParabola"></canvas>
+                </div>
+                
+                <div class="grafica-controls">
+                    <h4><i class="fas fa-sliders-h"></i> Control de Rangos</h4>
+                    
+                    <div class="rangos-control">
+                        <div class="rango-item">
+                            <h5><i class="fas fa-arrows-alt-h"></i> Eje X</h5>
+                            <div class="rango-inputs">
+                                <input type="number" id="xMin" value="-10" step="1">
+                                <span>a</span>
+                                <input type="number" id="xMax" value="10" step="1">
+                            </div>
+                            <p style="font-size: 0.8rem; margin-top: 8px; color: #aaa;">Rango mínimo y máximo para el eje X</p>
+                        </div>
+                        
+                        <div class="rango-item">
+                            <h5><i class="fas fa-arrows-alt-v"></i> Eje Y</h5>
+                            <div class="rango-inputs">
+                                <input type="number" id="yMin" value="-10" step="1">
+                                <span>a</span>
+                                <input type="number" id="yMax" value="10" step="1">
+                            </div>
+                            <p style="font-size: 0.8rem; margin-top: 8px; color: #aaa;">Rango mínimo y máximo para el eje Y</p>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-grafica" id="actualizarGrafica">
+                        <i class="fas fa-sync-alt"></i> Actualizar Gráfica
+                    </button>
+                    
+                    <button class="btn-grafica" id="autoAjustar" style="background: rgba(255, 215, 0, 0.2);">
+                        <i class="fas fa-expand-alt"></i> Auto-ajustar
+                    </button>
+                    
+                    <button class="btn-grafica" id="usarCoeficientesActuales" style="margin-top: 15px;">
+                        <i class="fas fa-calculator"></i> Usar coeficientes actuales
+                    </button>
+                    
+                    <div class="info-grafica">
+                        <p><strong>Consejo:</strong> Para ver mejor la parábola, ajusta los rangos según los coeficientes. Si a > 0, la parábola abre hacia arriba; si a < 0, abre hacia abajo.</p>
+                        <p style="margin-top: 10px;">Las soluciones reales aparecen como puntos rojos en la gráfica donde la parábola corta el eje X.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box" style="margin-top: 30px;">
+                <h4><i class="fas fa-lightbulb"></i> Interpretación de la gráfica</h4>
+                <ul>
+                    <li><strong>Parábola que abre hacia arriba:</strong> El coeficiente <em>a</em> es positivo (a > 0)</li>
+                    <li><strong>Parábola que abre hacia abajo:</strong> El coeficiente <em>a</em> es negativo (a < 0)</li>
+                    <li><strong>Intersecciones con el eje X:</strong> Son las soluciones reales de la ecuación</li>
+                    <li><strong>Vértice:</strong> Punto mínimo (si a > 0) o máximo (si a < 0) de la parábola</li>
+                    <li><strong>Eje de simetría:</strong> Línea vertical que pasa por el vértice (x = -b/2a)</li>
+                </ul>
             </div>
         </section>
         
@@ -931,6 +1224,7 @@ y = (-b - D**0.5) / (2*a)
                     <li>Incluye explicaciones sobre el discriminante y tipos de soluciones</li>
                     <li>Permite usar números decimales (no solo enteros)</li>
                     <li><strong>Permite ajustar el número de decimales mostrados</strong></li>
+                    <li><strong>Incluye gráfica interactiva de la parábola</strong></li>
                 </ul>
             </div>
         </section>
@@ -963,7 +1257,9 @@ y = (-b - D**0.5) / (2*a)
     <script>
         // Variables globales
         let decimales = 3;
-        let ultimoResultado = null; // Almacenará los últimos resultados calculados
+        let ultimoResultado = null;
+        let grafica = null;
+        let configGrafica = null;
         
         // Navegación del menú lateral
         document.querySelectorAll('.menu-item').forEach(item => {
@@ -984,6 +1280,13 @@ y = (-b - D**0.5) / (2*a)
                 // Mostrar la sección correspondiente
                 const targetId = this.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('activa');
+                
+                // Si la sección es la gráfica, actualizarla
+                if (targetId === 'grafica' && ultimoResultado) {
+                    setTimeout(() => {
+                        actualizarGrafica();
+                    }, 100);
+                }
             });
         });
         
@@ -1051,8 +1354,35 @@ y = (-b - D**0.5) / (2*a)
             if (tipo === 'reales-distintas') {
                 document.getElementById('solucion1').textContent = x1.toFixed(decimales);
                 document.getElementById('solucion2').textContent = x2.toFixed(decimales);
+                
+                // Actualizar puntos de intersección
+                document.getElementById('punto1-x').textContent = x1.toFixed(decimales);
+                document.getElementById('punto2-x').textContent = x2.toFixed(decimales);
+                document.getElementById('punto1').textContent = `(${x1.toFixed(decimales)}, 0)`;
+                document.getElementById('punto2').textContent = `(${x2.toFixed(decimales)}, 0)`;
+                
             } else if (tipo === 'unica') {
                 document.getElementById('solucion-unica-valor').textContent = x1.toFixed(decimales);
+                
+                // Actualizar punto de intersección (único)
+                document.getElementById('punto1-x').textContent = x1.toFixed(decimales);
+                document.getElementById('punto2-x').textContent = x1.toFixed(decimales);
+                document.getElementById('punto1').textContent = `(${x1.toFixed(decimales)}, 0)`;
+                document.getElementById('punto2').textContent = `(${x1.toFixed(decimales)}, 0)`;
+            }
+            
+            // Actualizar vértice
+            if (a !== undefined && b !== undefined) {
+                const verticeX = -b / (2 * a);
+                const verticeY = a * verticeX * verticeX + b * verticeX + c;
+                document.getElementById('vertice-x').textContent = verticeX.toFixed(decimales);
+                document.getElementById('vertice-y').textContent = verticeY.toFixed(decimales);
+                document.getElementById('vertice').textContent = `(${verticeX.toFixed(decimales)}, ${verticeY.toFixed(decimales)})`;
+            }
+            
+            // Actualizar gráfica si existe
+            if (grafica && ultimoResultado.tipo !== 'complejas') {
+                actualizarGrafica();
             }
         }
         
@@ -1095,6 +1425,197 @@ y = (-b - D**0.5) / (2*a)
                 decimalesInfo.classList.remove('visible');
             }
         });
+        
+        // Función para calcular los puntos de la parábola
+        function calcularPuntosParabola(a, b, c, xMin, xMax, numPuntos = 100) {
+            const puntos = [];
+            const paso = (xMax - xMin) / numPuntos;
+            
+            for (let i = 0; i <= numPuntos; i++) {
+                const x = xMin + i * paso;
+                const y = a * x * x + b * x + c;
+                puntos.push({x, y});
+            }
+            
+            return puntos;
+        }
+        
+        // Función para actualizar la gráfica
+        function actualizarGrafica() {
+            if (!ultimoResultado || ultimoResultado.tipo === 'complejas') {
+                // No hay parábola real para graficar
+                if (grafica) {
+                    grafica.destroy();
+                    grafica = null;
+                }
+                
+                const ctx = document.getElementById('graficaParabola').getContext('2d');
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.fillStyle = '#FFD700';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('No hay gráfica real para ecuaciones con soluciones complejas', ctx.canvas.width/2, ctx.canvas.height/2);
+                return;
+            }
+            
+            const { a, b, c, D, x1, x2, tipo } = ultimoResultado;
+            
+            // Obtener rangos de los inputs
+            let xMin = parseFloat(document.getElementById('xMin').value) || -10;
+            let xMax = parseFloat(document.getElementById('xMax').value) || 10;
+            let yMin = parseFloat(document.getElementById('yMin').value) || -10;
+            let yMax = parseFloat(document.getElementById('yMax').value) || 10;
+            
+            // Calcular puntos de la parábola
+            const puntos = calcularPuntosParabola(a, b, c, xMin, xMax, 200);
+            
+            // Preparar datos para Chart.js
+            const labels = puntos.map(p => p.x.toFixed(2));
+            const data = puntos.map(p => p.y);
+            
+            // Calcular vértice
+            const verticeX = -b / (2 * a);
+            const verticeY = a * verticeX * verticeX + b * verticeX + c;
+            
+            // Preparar datos para los puntos de intersección
+            let puntosInterseccion = [];
+            
+            if (tipo === 'reales-distintas') {
+                puntosInterseccion = [
+                    {x: x1, y: 0},
+                    {x: x2, y: 0}
+                ];
+            } else if (tipo === 'unica') {
+                puntosInterseccion = [
+                    {x: x1, y: 0}
+                ];
+            }
+            
+            // Configuración de la gráfica
+            configGrafica = {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: `y = ${a.toFixed(2)}x² + ${b.toFixed(2)}x + ${c.toFixed(2)}`,
+                            data: data,
+                            borderColor: '#FFD700',
+                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Intersecciones con eje X',
+                            data: puntosInterseccion.map(p => ({x: p.x, y: p.y})),
+                            backgroundColor: '#8B0000',
+                            borderColor: '#8B0000',
+                            borderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            showLine: false
+                        },
+                        {
+                            label: 'Vértice',
+                            data: [{x: verticeX, y: verticeY}],
+                            backgroundColor: '#4CAF50',
+                            borderColor: '#4CAF50',
+                            borderWidth: 2,
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            showLine: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFD700',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += `(${context.parsed.x.toFixed(decimales)}, ${context.parsed.y.toFixed(decimales)})`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: xMin,
+                            max: xMax,
+                            ticks: {
+                                color: '#FFD700',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 215, 0, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Eje X',
+                                color: '#FFD700',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            min: yMin,
+                            max: yMax,
+                            ticks: {
+                                color: '#FFD700',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 215, 0, 0.1)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Eje Y',
+                                color: '#FFD700',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Destruir gráfica anterior si existe
+            if (grafica) {
+                grafica.destroy();
+            }
+            
+            // Crear nueva gráfica
+            const ctx = document.getElementById('graficaParabola').getContext('2d');
+            grafica = new Chart(ctx, configGrafica);
+        }
         
         // Cálculo de soluciones
         document.getElementById('calcular').addEventListener('click', function() {
@@ -1152,18 +1673,104 @@ y = (-b - D**0.5) / (2*a)
             document.getElementById('soluciones-reales').style.display = 'none';
             document.getElementById('solucion-unica').style.display = 'none';
             document.getElementById('solucion-compleja').style.display = 'none';
+            document.getElementById('puntos-interseccion').style.display = 'none';
             
             // Mostrar el tipo de solución correspondiente
             if (tipo === 'reales-distintas') {
                 document.getElementById('soluciones-reales').style.display = 'block';
+                document.getElementById('puntos-interseccion').style.display = 'block';
             } else if (tipo === 'unica') {
                 document.getElementById('solucion-unica').style.display = 'block';
+                document.getElementById('puntos-interseccion').style.display = 'block';
             } else if (tipo === 'complejas') {
                 document.getElementById('solucion-compleja').style.display = 'block';
             }
             
+            // Auto-ajustar rangos de la gráfica
+            autoAjustarRangos();
+            
+            // Si el toggle está activado, mostrar la gráfica
+            const mostrarGraficaToggle = document.getElementById('mostrarGraficaCalculadora').checked;
+            if (mostrarGraficaToggle && tipo !== 'complejas') {
+                // Ir a la sección de gráfica
+                document.querySelector('[data-target="grafica"]').click();
+                
+                // Actualizar gráfica después de un breve retraso
+                setTimeout(() => {
+                    actualizarGrafica();
+                }, 300);
+            }
+            
             // Desplazarse al resultado
             document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Función para auto-ajustar rangos de la gráfica
+        function autoAjustarRangos() {
+            if (!ultimoResultado || ultimoResultado.tipo === 'complejas') return;
+            
+            const { a, b, c, x1, x2 } = ultimoResultado;
+            
+            // Calcular vértice
+            const verticeX = -b / (2 * a);
+            const verticeY = a * verticeX * verticeX + b * verticeX + c;
+            
+            // Determinar rangos apropiados
+            let xMin, xMax, yMin, yMax;
+            
+            if (ultimoResultado.tipo === 'reales-distintas') {
+                // Para dos soluciones distintas
+                xMin = Math.min(x1, x2, verticeX) - 2;
+                xMax = Math.max(x1, x2, verticeX) + 2;
+                yMin = Math.min(0, verticeY) - 2;
+                yMax = Math.max(0, verticeY) + 2;
+            } else {
+                // Para solución única
+                xMin = verticeX - 5;
+                xMax = verticeX + 5;
+                yMin = Math.min(0, verticeY) - 2;
+                yMax = Math.max(0, verticeY) + 2;
+            }
+            
+            // Asegurar que los rangos sean razonables
+            if (Math.abs(xMax - xMin) < 5) {
+                const centro = (xMax + xMin) / 2;
+                xMin = centro - 5;
+                xMax = centro + 5;
+            }
+            
+            if (Math.abs(yMax - yMin) < 5) {
+                const centro = (yMax + yMin) / 2;
+                yMin = centro - 5;
+                yMax = centro + 5;
+            }
+            
+            // Actualizar inputs de rangos
+            document.getElementById('xMin').value = Math.round(xMin);
+            document.getElementById('xMax').value = Math.round(xMax);
+            document.getElementById('yMin').value = Math.round(yMin);
+            document.getElementById('yMax').value = Math.round(yMax);
+        }
+        
+        // Botón para actualizar gráfica
+        document.getElementById('actualizarGrafica').addEventListener('click', function() {
+            actualizarGrafica();
+        });
+        
+        // Botón para auto-ajustar rangos
+        document.getElementById('autoAjustar').addEventListener('click', function() {
+            autoAjustarRangos();
+            actualizarGrafica();
+        });
+        
+        // Botón para usar coeficientes actuales
+        document.getElementById('usarCoeficientesActuales').addEventListener('click', function() {
+            if (ultimoResultado) {
+                actualizarGrafica();
+            } else {
+                alert("Primero calcula una ecuación para poder graficarla.");
+                document.querySelector('[data-target="calculadora"]').click();
+            }
         });
         
         // Limpiar formulario
@@ -1181,6 +1788,22 @@ y = (-b - D**0.5) / (2*a)
             
             // Limpiar último resultado
             ultimoResultado = null;
+            
+            // Limpiar gráfica
+            if (grafica) {
+                grafica.destroy();
+                grafica = null;
+            }
+            
+            // Restaurar rangos por defecto
+            document.getElementById('xMin').value = -10;
+            document.getElementById('xMax').value = 10;
+            document.getElementById('yMin').value = -10;
+            document.getElementById('yMax').value = 10;
+            
+            // Limpiar canvas de gráfica
+            const ctx = document.getElementById('graficaParabola').getContext('2d');
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             
             // Enfocar el primer input
             document.getElementById('coefA').focus();
@@ -1221,6 +1844,13 @@ y = (-b - D**0.5) / (2*a)
             setTimeout(() => {
                 document.getElementById('calcular').click();
             }, 500);
+            
+            // Inicializar gráfica vacía
+            const ctx = document.getElementById('graficaParabola').getContext('2d');
+            ctx.fillStyle = '#FFD700';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Ingresa coeficientes y haz clic en "Calcular Soluciones" para ver la gráfica', ctx.canvas.width/2, ctx.canvas.height/2);
         });
     </script>
 </body>
