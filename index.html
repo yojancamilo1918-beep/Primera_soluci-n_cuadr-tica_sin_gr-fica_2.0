@@ -545,6 +545,145 @@
             font-size: 300px;
             transform: rotate(30deg);
         }
+        
+        /* Botón de control de decimales */
+        .decimales-control {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            background: rgba(139, 0, 0, 0.9);
+            border-radius: 50px;
+            padding: 10px 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #FFD700;
+            transition: all 0.3s ease;
+        }
+        
+        .decimales-control:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        }
+        
+        .decimales-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .decimales-btn:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+        
+        .decimales-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .decimales-display {
+            margin: 0 15px;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .decimales-valor {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .decimales-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .decimales-control {
+                bottom: 15px;
+                right: 15px;
+                padding: 8px 12px;
+            }
+            
+            .decimales-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1.3rem;
+            }
+            
+            .decimales-valor {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Indicador de decimales en los resultados */
+        .decimal-indicator {
+            font-size: 0.9rem;
+            color: rgba(255, 215, 0, 0.7);
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        /* Mensaje de información sobre decimales */
+        .decimales-info {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            z-index: 999;
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            max-width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .decimales-info.visible {
+            display: block;
+        }
+        
+        .decimales-info h5 {
+            color: #FFD700;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .decimales-info p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .info-close {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #FFD700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .decimales-info {
+                bottom: 80px;
+                right: 15px;
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -633,6 +772,7 @@
                 <h4><i class="fas fa-chart-line"></i> Resultado</h4>
                 <div class="discriminante" id="discriminante-texto">
                     Discriminante (D) = b² - 4ac = <span id="valor-discriminante">0</span>
+                    <div class="decimal-indicator" id="discriminante-decimales">Mostrando con 3 decimales</div>
                 </div>
                 
                 <div id="soluciones-reales" style="display: none;">
@@ -640,11 +780,13 @@
                         <div class="solucion">
                             <h5><i class="fas fa-plus-circle"></i> Primera Solución (x₁)</h5>
                             <div class="valor-solucion" id="solucion1">0</div>
+                            <div class="decimal-indicator" id="solucion1-decimales">Mostrando con 3 decimales</div>
                             <p>Calculada como: x₁ = (-b + √D) / (2a)</p>
                         </div>
                         <div class="solucion">
                             <h5><i class="fas fa-minus-circle"></i> Segunda Solución (x₂)</h5>
                             <div class="valor-solucion" id="solucion2">0</div>
+                            <div class="decimal-indicator" id="solucion2-decimales">Mostrando con 3 decimales</div>
                             <p>Calculada como: x₂ = (-b - √D) / (2a)</p>
                         </div>
                     </div>
@@ -655,6 +797,7 @@
                         <div class="solucion" style="max-width: 100%;">
                             <h5><i class="fas fa-equals"></i> Solución Única (Doble)</h5>
                             <div class="valor-solucion" id="solucion-unica-valor">0</div>
+                            <div class="decimal-indicator" id="solucion-unica-decimales">Mostrando con 3 decimales</div>
                             <p>Cuando D = 0, hay una solución doble: x = -b / (2a)</p>
                         </div>
                     </div>
@@ -666,6 +809,7 @@
                         <h4>La solución es compleja y no está en los números reales</h4>
                         <p>Cuando el discriminante (D) es menor que 0, las soluciones son números complejos.</p>
                         <p>D = <span id="valor-discriminante-negativo">0</span> < 0</p>
+                        <div class="decimal-indicator" id="solucion-compleja-decimales">Mostrando con 3 decimales</div>
                     </div>
                 </div>
             </div>
@@ -786,6 +930,7 @@ y = (-b - D**0.5) / (2*a)
                     <li>Proporciona una interfaz gráfica intuitiva</li>
                     <li>Incluye explicaciones sobre el discriminante y tipos de soluciones</li>
                     <li>Permite usar números decimales (no solo enteros)</li>
+                    <li><strong>Permite ajustar el número de decimales mostrados</strong></li>
                 </ul>
             </div>
         </section>
@@ -793,8 +938,33 @@ y = (-b - D**0.5) / (2*a)
         <!-- Decoración de serpiente -->
         <div class="snake-decoration"></div>
     </main>
+    
+    <!-- Botón de control de decimales -->
+    <div class="decimales-control" id="decimalesControl">
+        <button class="decimales-btn" id="decrementarDecimales">-</button>
+        <div class="decimales-display">
+            <div class="decimales-valor" id="decimalesValor">3</div>
+            <div class="decimales-label">decimales</div>
+        </div>
+        <button class="decimales-btn" id="incrementarDecimales">+</button>
+        <button class="decimales-btn" id="infoDecimales" style="margin-left: 10px; width: 35px; height: 35px; font-size: 1.2rem;">
+            <i class="fas fa-info"></i>
+        </button>
+    </div>
+    
+    <!-- Mensaje de información sobre decimales -->
+    <div class="decimales-info" id="decimalesInfo">
+        <button class="info-close" id="closeInfo">&times;</button>
+        <h5>Control de Decimales</h5>
+        <p>Usa los botones + y - para ajustar la precisión de los resultados. Esto afecta al discriminante y a las soluciones mostradas.</p>
+        <p>El código original muestra 3 decimales, pero puedes ajustar desde 0 hasta 10.</p>
+    </div>
 
     <script>
+        // Variables globales
+        let decimales = 3;
+        let ultimoResultado = null; // Almacenará los últimos resultados calculados
+        
         // Navegación del menú lateral
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -855,6 +1025,77 @@ y = (-b - D**0.5) / (2*a)
         document.getElementById('coefB').addEventListener('input', actualizarEcuacion);
         document.getElementById('coefC').addEventListener('input', actualizarEcuacion);
         
+        // Función para actualizar todos los valores mostrados con la precisión actual
+        function actualizarDecimalesMostrados() {
+            if (!ultimoResultado) return;
+            
+            // Actualizar valor de decimales en el control
+            document.getElementById('decimalesValor').textContent = decimales;
+            
+            // Actualizar indicadores de decimales
+            const decimalText = `Mostrando con ${decimales} ${decimales === 1 ? 'decimal' : 'decimales'}`;
+            document.getElementById('discriminante-decimales').textContent = decimalText;
+            document.getElementById('solucion1-decimales').textContent = decimalText;
+            document.getElementById('solucion2-decimales').textContent = decimalText;
+            document.getElementById('solucion-unica-decimales').textContent = decimalText;
+            document.getElementById('solucion-compleja-decimales').textContent = decimalText;
+            
+            // Actualizar valores con nueva precisión
+            const { a, b, c, D, x1, x2, tipo } = ultimoResultado;
+            
+            // Actualizar discriminante
+            document.getElementById('valor-discriminante').textContent = D.toFixed(decimales);
+            document.getElementById('valor-discriminante-negativo').textContent = D.toFixed(decimales);
+            
+            // Actualizar soluciones según el tipo
+            if (tipo === 'reales-distintas') {
+                document.getElementById('solucion1').textContent = x1.toFixed(decimales);
+                document.getElementById('solucion2').textContent = x2.toFixed(decimales);
+            } else if (tipo === 'unica') {
+                document.getElementById('solucion-unica-valor').textContent = x1.toFixed(decimales);
+            }
+        }
+        
+        // Control de decimales - Incrementar
+        document.getElementById('incrementarDecimales').addEventListener('click', function() {
+            if (decimales < 10) {
+                decimales++;
+                actualizarDecimalesMostrados();
+            }
+        });
+        
+        // Control de decimales - Decrementar
+        document.getElementById('decrementarDecimales').addEventListener('click', function() {
+            if (decimales > 0) {
+                decimales--;
+                actualizarDecimalesMostrados();
+            }
+        });
+        
+        // Mostrar información sobre decimales
+        document.getElementById('infoDecimales').addEventListener('click', function() {
+            document.getElementById('decimalesInfo').classList.add('visible');
+        });
+        
+        // Cerrar información sobre decimales
+        document.getElementById('closeInfo').addEventListener('click', function() {
+            document.getElementById('decimalesInfo').classList.remove('visible');
+        });
+        
+        // Cerrar información al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const decimalesInfo = document.getElementById('decimalesInfo');
+            const infoDecimalesBtn = document.getElementById('infoDecimales');
+            const decimalesControl = document.getElementById('decimalesControl');
+            
+            if (decimalesInfo.classList.contains('visible') && 
+                !decimalesInfo.contains(event.target) && 
+                !infoDecimalesBtn.contains(event.target) &&
+                !decimalesControl.contains(event.target)) {
+                decimalesInfo.classList.remove('visible');
+            }
+        });
+        
         // Cálculo de soluciones
         document.getElementById('calcular').addEventListener('click', function() {
             // Obtener valores de los inputs
@@ -876,35 +1117,48 @@ y = (-b - D**0.5) / (2*a)
             // Calcular discriminante
             const D = b * b - 4 * a * c;
             
+            // Determinar tipo de solución
+            let tipo = '';
+            let x1 = null;
+            let x2 = null;
+            
+            if (D > 0) {
+                // Dos soluciones reales distintas
+                tipo = 'reales-distintas';
+                x1 = (-b + Math.sqrt(D)) / (2 * a);
+                x2 = (-b - Math.sqrt(D)) / (2 * a);
+                
+            } else if (D === 0) {
+                // Una solución real doble
+                tipo = 'unica';
+                x1 = -b / (2 * a);
+                x2 = x1;
+                
+            } else {
+                // D < 0: Soluciones complejas
+                tipo = 'complejas';
+            }
+            
+            // Guardar resultados para poder actualizar los decimales después
+            ultimoResultado = { a, b, c, D, x1, x2, tipo };
+            
             // Mostrar resultado
             document.getElementById('resultado').classList.add('visible');
-            document.getElementById('valor-discriminante').textContent = D.toFixed(3);
-            document.getElementById('valor-discriminante-negativo').textContent = D.toFixed(3);
+            
+            // Actualizar decimales mostrados (esto actualizará los valores)
+            actualizarDecimalesMostrados();
             
             // Ocultar todos los tipos de solución primero
             document.getElementById('soluciones-reales').style.display = 'none';
             document.getElementById('solucion-unica').style.display = 'none';
             document.getElementById('solucion-compleja').style.display = 'none';
             
-            // Determinar tipo de solución según el discriminante
-            if (D > 0) {
-                // Dos soluciones reales distintas
-                const x1 = (-b + Math.sqrt(D)) / (2 * a);
-                const x2 = (-b - Math.sqrt(D)) / (2 * a);
-                
-                document.getElementById('solucion1').textContent = x1.toFixed(3);
-                document.getElementById('solucion2').textContent = x2.toFixed(3);
+            // Mostrar el tipo de solución correspondiente
+            if (tipo === 'reales-distintas') {
                 document.getElementById('soluciones-reales').style.display = 'block';
-                
-            } else if (D === 0) {
-                // Una solución real doble
-                const x = -b / (2 * a);
-                
-                document.getElementById('solucion-unica-valor').textContent = x.toFixed(3);
+            } else if (tipo === 'unica') {
                 document.getElementById('solucion-unica').style.display = 'block';
-                
-            } else {
-                // D < 0: Soluciones complejas
+            } else if (tipo === 'complejas') {
                 document.getElementById('solucion-compleja').style.display = 'block';
             }
             
@@ -924,6 +1178,9 @@ y = (-b - D**0.5) / (2*a)
             
             // Ocultar resultado
             document.getElementById('resultado').classList.remove('visible');
+            
+            // Limpiar último resultado
+            ultimoResultado = null;
             
             // Enfocar el primer input
             document.getElementById('coefA').focus();
@@ -954,8 +1211,16 @@ y = (-b - D**0.5) / (2*a)
         
         // Precargar un ejemplo al cargar la página
         window.addEventListener('DOMContentLoaded', function() {
+            // Inicializar indicadores de decimales
+            actualizarDecimalesMostrados();
+            
             // Cargar un ejemplo por defecto
             document.getElementById('ejemplo').click();
+            
+            // Calcular automáticamente el ejemplo
+            setTimeout(() => {
+                document.getElementById('calcular').click();
+            }, 500);
         });
     </script>
 </body>
